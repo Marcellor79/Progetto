@@ -1,7 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ Script caricato!");
+
+    // Verifica se l'utente è loggato come admin
+    let isAdmin = localStorage.getItem("isAdmin") === "true";
+
+    // Nasconde il form di aggiunta macchine se non è admin
+    let adminSection = document.querySelector(".admin-only");
+    if (adminSection && !isAdmin) {
+        adminSection.style.display = "none";
+    }
+
+    // Mostra la lista delle macchine salvate
     mostraMacchine();
-    
+
     let macchinaForm = document.getElementById("macchinaForm");
     if (macchinaForm) {
         macchinaForm.addEventListener("submit", function (e) {
@@ -89,8 +100,17 @@ function mostraMacchine() {
         let li = document.createElement("li");
         li.innerHTML = `${macchina} 
             <button onclick="selezionaMacchina('${macchina}')">✅</button> 
-            <button onclick="rimuoviMacchina(${index})">❌</button>`;
+            <button class="admin-only" onclick="rimuoviMacchina(${index})">❌</button>`;
         lista.appendChild(li);
+    });
+
+    // Nasconde i pulsanti di rimozione se non è admin
+    let isAdmin = localStorage.getItem("isAdmin") === "true";
+    let adminButtons = document.querySelectorAll(".admin-only");
+    adminButtons.forEach(button => {
+        if (!isAdmin) {
+            button.style.display = "none";
+        }
     });
 }
 
@@ -119,7 +139,7 @@ function mostraGuasti(macchina) {
             let li = document.createElement("li");
             li.innerHTML = `${guasto} 
                 <button onclick="selezionaGuasto('${guasto}')">🔧</button> 
-                <button onclick="rimuoviGuasto('${macchina}', ${index})">❌</button>`;
+                <button class="admin-only" onclick="rimuoviGuasto('${macchina}', ${index})">❌</button>`;
             lista.appendChild(li);
         });
     } else {
@@ -153,20 +173,10 @@ function mostraComponenti(guasto) {
         componenti[guasto].forEach((componente, index) => {
             let li = document.createElement("li");
             li.innerHTML = `${componente} 
-                <button onclick="rimuoviComponente('${guasto}', ${index})">❌</button>`;
+                <button class="admin-only" onclick="rimuoviComponente('${guasto}', ${index})">❌</button>`;
             lista.appendChild(li);
         });
     } else {
         lista.innerHTML = "<li>Nessun componente registrato.</li>";
-    }
-}
-
-// Rimuove un componente
-function rimuoviComponente(guasto, index) {
-    let componenti = JSON.parse(localStorage.getItem("componenti")) || {};
-    if (componenti[guasto]) {
-        componenti[guasto].splice(index, 1);
-        localStorage.setItem("componenti", JSON.stringify(componenti));
-        mostraComponenti(guasto);
     }
 }

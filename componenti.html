@@ -6,19 +6,113 @@
     <title>Componenti Guasto</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body onload="controllaLogin()">
     <h1 id="titoloGuasto"></h1>
     <a href="guasti_macchina.html">⬅ Torna ai Guasti</a>
 
-    <h2>Aggiungi Componente</h2>
-    <form id="componenteForm">
-        <input type="text" id="nomeComponente" placeholder="Nome Componente" required>
-        <button type="submit">➕ Aggiungi</button>
-    </form>
+    <!-- Sezione aggiunta componente (visibile solo agli admin) -->
+    <div class="admin-only" style="display: none;">
+        <h2>Aggiungi Componente</h2>
+        <form id="componenteForm">
+            <input type="text" id="nomeComponente" placeholder="Nome Componente" required>
+            <input type="text" id="siglaComponente" placeholder="Sigla Componente" required>
+            <button type="submit">➕ Aggiungi</button>
+        </form>
+    </div>
 
     <h2>Elenco Componenti</h2>
-    <ul id="listaComponenti"></ul>
 
-    <script src="script.js"></script>
+    <!-- Tabella per visualizzare i componenti -->
+    <table id="componentiTable">
+        <thead>
+            <tr>
+                <th>Nome Componente</th>
+                <th>Sigla</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody id="listaComponenti"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let guastoSelezionato = localStorage.getItem("guastoSelezionato");
+            let titoloGuasto = document.getElementById("titoloGuasto");
+
+            if (titoloGuasto && guastoSelezionato) {
+                titoloGuasto.textContent = `Componenti per ${guastoSelezionato}`;
+                mostraComponenti(guastoSelezionato);
+            }
+
+            let componenteForm = document.getElementById("componenteForm");
+            if (componenteForm) {
+                componenteForm.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    let nomeComponente = document.getElementById("nomeComponente").value.trim();
+                    let siglaComponente = document.getElementById("siglaComponente").value.trim();
+                    let guastoSelezionato = localStorage.getItem("guastoSelezionato");
+
+                    if (nomeComponente === "" || siglaComponente === "" || !guastoSelezionato) return;
+
+                    let componenti = JSON.parse(localStorage.getItem("componenti")) || {};
+                    if (!componenti[guastoSelezionato]) {
+                        componenti[guastoSelezionato] = [];
+                    }
+
+                    componenti[guastoSelezionato].push({ nome: nomeComponente, sigla: siglaComponente });
+                    localStorage.setItem("componenti", JSON.stringify(componenti));
+
+                    document.getElementById("nomeComponente").value = "";
+                    document.getElementById("siglaComponente").value = "";
+                    mostraComponenti(guastoSelezionato);
+                });
+            }
+
+            controllaLogin();
+        });
+
+        function mostraComponenti(guasto) {
+            let componenti = JSON.parse(localStorage.getItem("componenti")) || {};
+            let lista = document.getElementById("listaComponenti");
+            lista.innerHTML = "";
+
+            if (componenti[guasto] && componenti[guasto].length > 0) {
+                componenti[guasto].forEach((componente, index) => {
+                    let row = document.createElement("tr");
+
+                    row.innerHTML = `
+                        <td><b>${componente.nome}</b></td>
+                        <td><span class="componente-sigla">${componente.sigla}</span></td>
+                        <td>
+                            ${localStorage.getItem("isAdmin") === "true" ? 
+                            `<button onclick="rimuoviComponente('${guasto}', ${index})" class="remove-btn">❌</button>` : ''}
+                        </td>
+                    `;
+                    
+                    lista.appendChild(row);
+                });
+            } else {
+                lista.innerHTML = "<tr><td colspan='3'>Nessun componente registrato.</td></tr>";
+            }
+        }
+
+        function rimuoviComponente(guasto, index) {
+            let componenti = JSON.parse(localStorage.getItem("componenti")) || {};
+            if (componenti[guasto]) {
+                componenti[guasto].splice(index, 1);
+                localStorage.setItem("componenti", JSON.stringify(componenti));
+                mostraComponenti(guasto);
+            }
+        }
+
+        function controllaLogin() {
+            let isAdmin = localStorage.getItem("isAdmin") === "true";
+            let adminSection = document.querySelector(".admin-only");
+
+            if (adminSection) {
+                adminSection.style.display = isAdmin ? "block" : "none";
+            }
+        }
+    </script>
 </body>
 </html>
