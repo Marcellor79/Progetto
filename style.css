@@ -71,6 +71,7 @@ button {
     cursor: pointer;
     transition: all 0.3s ease;
     width: auto;
+    margin-top: 10px;
 }
 
 button:hover {
@@ -183,4 +184,88 @@ button:hover {
 #componenteForm button:hover {
     background-color: #45a049;
 }
+#search {
+    width: 300px; /* Imposta una larghezza più stretta */
+    max-width: 100%; /* Assicura che sia responsiva */
+    padding: 8px; /* Dà un po' di spazio interno */
+    font-size: 16px; /* Grandezza del testo */
+    border: 1px solid #ccc; /* Bordo sottile */
+    border-radius: 5px; /* Angoli arrotondati */
+}
+#ricercaMacchina {
+    width: 300px; /* Restringe la barra di ricerca */
+    max-width: 100%; /* Assicura che sia responsiva */
+    padding: 8px; /* Spaziatura interna */
+    font-size: 16px; /* Grandezza del testo */
+    border: 1px solid #ccc; /* Bordo sottile */
+    border-radius: 5px; /* Angoli arrotondati */
+}
+.bottone-torna {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 20px; /* Aggiunge spazio sotto il pulsante */
+}
 
+.bottone-torna:hover {
+    background-color: #0056b3;
+}
+
+.bottone-torna:active {
+    background-color: #003f7f;
+}
+
+/* pulsante torna ai guasti */
+.bottone-torna_ai_guasti {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bolder;
+    color: white;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.bottone-torna_ai_guasti {
+    background-color: #45a049;
+}
+
+.bottone-torna_ai_guasti {
+    background-color: #4CAF50;
+}
+
+/* pulsante seleziona guasti */
+.btn-seleziona-guasto {
+    padding: 8px 12px;
+    font-size: 16px;
+    background-color: #28a745; /* Colore verde */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-left: 10px; /* Distanza tra il testo e il pulsante */
+}
+
+.btn-seleziona-guasto:hover {
+    background-color: #218838; /* Colore verde più scuro al passaggio del mouse */
+    transform: scale(1.05); /* Effetto zoom quando si passa sopra */
+}
+
+.btn-seleziona-guasto:active {
+    background-color: #1e7e34; /* Colore verde più scuro quando si clicca */
+    transform: scale(1); /* Annulla l'effetto zoom */
+}

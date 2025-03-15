@@ -6,9 +6,12 @@
     <title>Guasti della Macchina</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body onload="controllaLogin()">
+<body>
     <h1 id="titoloMacchina"></h1>
-    <a href="guasti.html">⬅ Torna alla lista</a>
+    <a href="guasti.html" class="bottone-torna">⬅ Torna alla lista</a>
+
+    <!-- Sezione ricerca macchina -->
+    <input type="text" id="ricercaMacchina" placeholder="Cerca macchina..." oninput="filtraMacchine()">
 
     <!-- Sezione aggiunta guasto (visibile solo agli admin) -->
     <div class="admin-only" style="display: none;">
@@ -23,85 +26,105 @@
     <ul id="listaGuasti"></ul>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            let macchinaSelezionata = localStorage.getItem("macchinaSelezionata");
-            let titoloMacchina = document.getElementById("titoloMacchina");
+    document.addEventListener("DOMContentLoaded", () => {
+        let macchinaSelezionata = localStorage.getItem("macchinaSelezionata");
+        let titoloMacchina = document.getElementById("titoloMacchina");
 
-            if (titoloMacchina && macchinaSelezionata) {
-                titoloMacchina.textContent = `Guasti di ${macchinaSelezionata}`;
-                mostraGuasti(macchinaSelezionata);
-            }
-
-            let guastoForm = document.getElementById("guastoForm");
-            if (guastoForm) {
-                guastoForm.addEventListener("submit", function (e) {
-                    e.preventDefault();
-                    let tipoGuasto = document.getElementById("tipoGuasto").value.trim();
-                    let macchinaSelezionata = localStorage.getItem("macchinaSelezionata");
-
-                    if (tipoGuasto === "" || !macchinaSelezionata) return;
-
-                    let guasti = JSON.parse(localStorage.getItem("guasti")) || {};
-                    if (!guasti[macchinaSelezionata]) {
-                        guasti[macchinaSelezionata] = [];
-                    }
-
-                    guasti[macchinaSelezionata].push(tipoGuasto);
-                    localStorage.setItem("guasti", JSON.stringify(guasti));
-
-                    document.getElementById("tipoGuasto").value = "";
-                    mostraGuasti(macchinaSelezionata);
-                });
-            }
-
-            controllaLogin();
-        });
-
-        function mostraGuasti(macchina) {
-            let guasti = JSON.parse(localStorage.getItem("guasti")) || {};
-            let lista = document.getElementById("listaGuasti");
-            lista.innerHTML = "";
-
-            if (guasti[macchina] && guasti[macchina].length > 0) {
-                guasti[macchina].forEach((guasto, index) => {
-                    let li = document.createElement("li");
-                    li.innerHTML = `${guasto} 
-                        <button onclick="selezionaGuasto('${guasto}')">🔧</button>`;
-
-                    // Aggiungi il pulsante per rimuovere il guasto solo se è un amministratore
-                    if (localStorage.getItem("isAdmin") === "true") {
-                        li.innerHTML += ` <button onclick="rimuoviGuasto('${macchina}', ${index})">❌</button>`;
-                    }
-                    
-                    lista.appendChild(li);
-                });
-            } else {
-                lista.innerHTML = "<li>Nessun guasto registrato.</li>";
-            }
+        if (macchinaSelezionata && titoloMacchina) {
+            titoloMacchina.textContent = `Guasti di ${macchinaSelezionata}`;
+            mostraGuasti(macchinaSelezionata);
         }
 
-        function rimuoviGuasto(macchina, index) {
-            let guasti = JSON.parse(localStorage.getItem("guasti")) || {};
-            if (guasti[macchina]) {
-                guasti[macchina].splice(index, 1);
+        let guastoForm = document.getElementById("guastoForm");
+
+        if (guastoForm) {
+            guastoForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                let tipoGuasto = document.getElementById("tipoGuasto").value.trim();
+                let macchinaSelezionata = localStorage.getItem("macchinaSelezionata");
+
+                if (tipoGuasto === "" || !macchinaSelezionata) {
+                    alert("Errore: Seleziona una macchina e inserisci un guasto valido!");
+                    return;
+                }
+
+                let guasti = JSON.parse(localStorage.getItem("guasti")) || {};
+
+                if (!guasti[macchinaSelezionata]) {
+                    guasti[macchinaSelezionata] = [];
+                }
+
+                guasti[macchinaSelezionata].push(tipoGuasto);
                 localStorage.setItem("guasti", JSON.stringify(guasti));
-                mostraGuasti(macchina);
+
+                document.getElementById("tipoGuasto").value = ""; // Svuota il campo input
+                mostraGuasti(macchinaSelezionata); // Aggiorna la lista dei guasti
+            });
+        }
+
+        controllaLogin();
+    });
+
+    function mostraGuasti(macchina) {
+        let guasti = JSON.parse(localStorage.getItem("guasti")) || {};
+        let lista = document.getElementById("listaGuasti");
+        lista.innerHTML = "";
+
+        if (guasti[macchina] && guasti[macchina].length > 0) {
+            guasti[macchina].forEach((guasto, index) => {
+                let li = document.createElement("li");
+                li.innerHTML = `${guasto} <button class="btn-seleziona-guasto" onclick="selezionaGuasto('${guasto}')">🔧</button>`;
+
+                if (localStorage.getItem("isAdmin") === "true") {
+                    li.innerHTML += ` <button onclick="rimuoviGuasto('${macchina}', ${index})">❌</button>`;
+                }
+                
+                lista.appendChild(li);
+            });
+        } else {
+            lista.innerHTML = "<li>Nessun guasto registrato.</li>";
+        }
+    }
+
+    function rimuoviGuasto(macchina, index) {
+        let guasti = JSON.parse(localStorage.getItem("guasti")) || {};
+        if (guasti[macchina]) {
+            guasti[macchina].splice(index, 1);
+            localStorage.setItem("guasti", JSON.stringify(guasti));
+            mostraGuasti(macchina);
+        }
+    }
+
+    function selezionaGuasto(guasto) {
+        localStorage.setItem("guastoSelezionato", guasto);
+        window.location.href = "componenti.html";
+    }
+
+    function controllaLogin() {
+        let isAdmin = localStorage.getItem("isAdmin") === "true";
+        let adminSection = document.querySelector(".admin-only");
+
+        if (adminSection) {
+            adminSection.style.display = isAdmin ? "block" : "none";
+        }
+    }
+
+    function filtraMacchine() {
+        let input = document.getElementById("ricercaMacchina").value.toLowerCase();
+        let listaGuasti = document.getElementById("listaGuasti");
+        let guasti = listaGuasti.getElementsByTagName("li");
+
+        for (let i = 0; i < guasti.length; i++) {
+            let testo = guasti[i].textContent.toLowerCase();
+            if (testo.includes(input)) {
+                guasti[i].style.display = "";
+            } else {
+                guasti[i].style.display = "none";
             }
         }
-
-        function selezionaGuasto(guasto) {
-            localStorage.setItem("guastoSelezionato", guasto);
-            window.location.href = "componenti.html";
-        }
-
-        function controllaLogin() {
-            let isAdmin = localStorage.getItem("isAdmin") === "true";
-            let adminSection = document.querySelector(".admin-only");
-
-            if (adminSection) {
-                adminSection.style.display = isAdmin ? "block" : "none";
-            }
-        }
+    }
     </script>
+
 </body>
 </html>

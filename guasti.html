@@ -10,13 +10,18 @@
 
     <!-- Pulsante Torna alla Home -->
     <div class="home-button">
-        <a href="index.html">
-            <button>Torna alla Home</button>
-        </a>
+        <button onclick="tornaAllaHome()">Torna alla Home</button>
     </div>
 
+    <!-- Campo di ricerca -->
+    <h2>🔍 Cerca Macchina</h2>
+    <input type="text" id="search" placeholder="Inserisci codice o nome macchina..." onkeyup="filtraMacchine()">
+    
+    <!-- Lista filtrata (inizialmente nascosta) -->
+    <ul id="listaMacchine" style="display: none;"></ul>
+
     <!-- Sezione visibile solo agli amministratori -->
-    <div class="admin-only">
+    <div id="adminSection" class="admin-only" style="display: none;">
         <h2>Aggiungi Macchina</h2>
         <form id="macchinaForm">
             <input type="text" id="nomeMacchina" placeholder="Nome della Macchina" required>
@@ -24,9 +29,66 @@
         </form>
     </div>
 
-    <h2>Elenco Macchine</h2>
-    <ul id="listaMacchine"></ul>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let isAdmin = localStorage.getItem("isAdmin") === "true";
 
-    <script src="script.js"></script>
+            // Mostra il form solo se l'utente è amministratore
+            let adminSection = document.getElementById("adminSection");
+            if (adminSection) {
+                adminSection.style.display = isAdmin ? "block" : "none";
+            }
+
+            let macchinaForm = document.getElementById("macchinaForm");
+            if (macchinaForm) {
+                macchinaForm.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    let nomeMacchina = document.getElementById("nomeMacchina").value.trim();
+                    if (nomeMacchina === "") return;
+
+                    let macchine = JSON.parse(localStorage.getItem("macchine")) || [];
+                    macchine.push(nomeMacchina);
+                    localStorage.setItem("macchine", JSON.stringify(macchine));
+
+                    document.getElementById("nomeMacchina").value = "";
+                });
+            }
+        });
+
+        function filtraMacchine() {
+            let input = document.getElementById("search").value.toLowerCase().trim();
+            let lista = document.getElementById("listaMacchine");
+            let macchine = JSON.parse(localStorage.getItem("macchine")) || [];
+
+            lista.innerHTML = ""; // Svuota la lista ogni volta che si digita
+            lista.style.display = "none"; // Nasconde la lista per default
+
+            if (input === "") return; // Se il campo è vuoto, non mostra nulla
+
+            let macchineFiltrate = macchine.filter(macchina => macchina.toLowerCase().includes(input));
+
+            if (macchineFiltrate.length > 0) {
+                lista.style.display = "block"; // Mostra la lista solo se ci sono risultati
+
+                macchineFiltrate.forEach(macchina => {
+                    let li = document.createElement("li");
+                    li.textContent = macchina;
+                    li.onclick = function() {
+                        localStorage.setItem("macchinaSelezionata", macchina);
+                        window.location.href = "guasti_macchina.html";
+                    };
+                    lista.appendChild(li);
+                });
+            } else {
+                lista.style.display = "block";
+                lista.innerHTML = "<li>Nessuna macchina trovata.</li>";
+            }
+        }
+
+        function tornaAllaHome() {
+            window.location.href = "index.html";
+        }
+    </script>
 </body>
 </html>

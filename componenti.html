@@ -8,10 +8,11 @@
 </head>
 <body onload="controllaLogin()">
     <h1 id="titoloGuasto"></h1>
-    <a href="guasti_macchina.html">⬅ Torna ai Guasti</a>
+    <a href="guasti_macchina.html" class="bottone-torna_ai_guasti">⬅ Torna ai Guasti</a>
+
 
     <!-- Sezione aggiunta componente (visibile solo agli admin) -->
-    <div class="admin-only" style="display: none;">
+    <div id="adminSection" class="admin-only" style="display: none;">
         <h2>Aggiungi Componente</h2>
         <form id="componenteForm">
             <input type="text" id="nomeComponente" placeholder="Nome Componente" required>
@@ -23,12 +24,12 @@
     <h2>Elenco Componenti</h2>
 
     <!-- Tabella per visualizzare i componenti -->
-    <table id="componentiTable">
+    <table id="componentiTable" class="styled-table">
         <thead>
             <tr>
                 <th>Nome Componente</th>
                 <th>Sigla</th>
-                <th>Azioni</th>
+                <th id="adminActionsHeader" class="admin-only" style="display: none;">Azioni</th>
             </tr>
         </thead>
         <tbody id="listaComponenti"></tbody>
@@ -36,12 +37,13 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            let macchinaSelezionata = localStorage.getItem("macchinaSelezionata");
             let guastoSelezionato = localStorage.getItem("guastoSelezionato");
             let titoloGuasto = document.getElementById("titoloGuasto");
 
-            if (titoloGuasto && guastoSelezionato) {
-                titoloGuasto.textContent = `Componenti per ${guastoSelezionato}`;
-                mostraComponenti(guastoSelezionato);
+            if (titoloGuasto && macchinaSelezionata && guastoSelezionato) {
+                titoloGuasto.textContent = `Componenti per ${guastoSelezionato} - ${macchinaSelezionata}`;
+                mostraComponenti(macchinaSelezionata, guastoSelezionato);
             }
 
             let componenteForm = document.getElementById("componenteForm");
@@ -50,43 +52,45 @@
                     e.preventDefault();
                     let nomeComponente = document.getElementById("nomeComponente").value.trim();
                     let siglaComponente = document.getElementById("siglaComponente").value.trim();
+                    let macchinaSelezionata = localStorage.getItem("macchinaSelezionata");
                     let guastoSelezionato = localStorage.getItem("guastoSelezionato");
 
-                    if (nomeComponente === "" || siglaComponente === "" || !guastoSelezionato) return;
+                    if (nomeComponente === "" || siglaComponente === "" || !macchinaSelezionata || !guastoSelezionato) return;
 
                     let componenti = JSON.parse(localStorage.getItem("componenti")) || {};
-                    if (!componenti[guastoSelezionato]) {
-                        componenti[guastoSelezionato] = [];
+                    let chiave = `${macchinaSelezionata}_${guastoSelezionato}`;
+
+                    if (!componenti[chiave]) {
+                        componenti[chiave] = [];
                     }
 
-                    componenti[guastoSelezionato].push({ nome: nomeComponente, sigla: siglaComponente });
+                    componenti[chiave].push({ nome: nomeComponente, sigla: siglaComponente });
                     localStorage.setItem("componenti", JSON.stringify(componenti));
 
                     document.getElementById("nomeComponente").value = "";
                     document.getElementById("siglaComponente").value = "";
-                    mostraComponenti(guastoSelezionato);
+                    mostraComponenti(macchinaSelezionata, guastoSelezionato);
                 });
             }
 
             controllaLogin();
         });
 
-        function mostraComponenti(guasto) {
+        function mostraComponenti(macchina, guasto) {
             let componenti = JSON.parse(localStorage.getItem("componenti")) || {};
             let lista = document.getElementById("listaComponenti");
+            let chiave = `${macchina}_${guasto}`;
+            let isAdmin = localStorage.getItem("isAdmin") === "true";
             lista.innerHTML = "";
 
-            if (componenti[guasto] && componenti[guasto].length > 0) {
-                componenti[guasto].forEach((componente, index) => {
+            if (componenti[chiave] && componenti[chiave].length > 0) {
+                componenti[chiave].forEach((componente, index) => {
                     let row = document.createElement("tr");
 
                     row.innerHTML = `
                         <td><b>${componente.nome}</b></td>
                         <td><span class="componente-sigla">${componente.sigla}</span></td>
-                        <td>
-                            ${localStorage.getItem("isAdmin") === "true" ? 
-                            `<button onclick="rimuoviComponente('${guasto}', ${index})" class="remove-btn">❌</button>` : ''}
-                        </td>
+                        ${isAdmin ? `<td><button onclick="rimuoviComponente('${macchina}', '${guasto}', ${index})" class="remove-btn">❌</button></td>` : ""}
                     `;
                     
                     lista.appendChild(row);
@@ -96,22 +100,38 @@
             }
         }
 
-        function rimuoviComponente(guasto, index) {
+        function rimuoviComponente(macchina, guasto, index) {
+            let isAdmin = localStorage.getItem("isAdmin") === "true";
+            if (!isAdmin) {
+                alert("Non hai i permessi per eliminare questo componente.");
+                return;
+            }
+
             let componenti = JSON.parse(localStorage.getItem("componenti")) || {};
-            if (componenti[guasto]) {
-                componenti[guasto].splice(index, 1);
+            let chiave = `${macchina}_${guasto}`;
+
+            if (componenti[chiave]) {
+                componenti[chiave].splice(index, 1);
                 localStorage.setItem("componenti", JSON.stringify(componenti));
-                mostraComponenti(guasto);
+                mostraComponenti(macchina, guasto);
             }
         }
 
         function controllaLogin() {
             let isAdmin = localStorage.getItem("isAdmin") === "true";
-            let adminSection = document.querySelector(".admin-only");
+            
+            let adminSection = document.getElementById("adminSection");
+            let adminActionsHeader = document.getElementById("adminActionsHeader");
+            let adminButtons = document.querySelectorAll(".admin-only");
 
-            if (adminSection) {
-                adminSection.style.display = isAdmin ? "block" : "none";
-            }
+            if (adminSection) adminSection.style.display = isAdmin ? "block" : "none";
+            if (adminActionsHeader) adminActionsHeader.style.display = isAdmin ? "table-cell" : "none";
+            
+            adminButtons.forEach(button => {
+                button.style.display = isAdmin ? "block" : "none";
+            });
+
+            mostraComponenti(localStorage.getItem("macchinaSelezionata"), localStorage.getItem("guastoSelezionato"));
         }
     </script>
 </body>
