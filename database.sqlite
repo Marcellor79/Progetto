@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS macchine (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS guasti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    macchina_id INTEGER,
+    descrizione TEXT NOT NULL,
+    FOREIGN KEY(macchina_id) REFERENCES macchine(id)
+);
+
+INSERT INTO macchine (nome) VALUES ('Macchina 1'), ('Macchina 2');
+INSERT INTO guasti (macchina_id, descrizione) VALUES (1, 'Motore guasto'), (2, 'Cinghia rotta');
