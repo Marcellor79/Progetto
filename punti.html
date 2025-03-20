@@ -5,9 +5,139 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posti d'Attesa e Punti di Raccolta</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #adminSection {
+            display: block; /* Mostra la sezione dell'amministratore */
+        }
+    </style>
 </head>
 <body>
     <h1>Posti d'Attesa e Punti di Raccolta</h1>
     <a href="index.html">⬅ Torna al Menu</a>
+
+    <!-- Sezione per l'inserimento dei dati (visibile sempre per l'amministratore) -->
+    <div id="adminSection">
+        <h2>Aggiungi Reparto</h2>
+        <form id="form">
+            <label for="reparto">Reparto:</label>
+            <input type="text" id="reparto" required><br><br>
+
+            <label for="posti">Posti d'Attesa:</label>
+            <input type="number" id="posti" required><br><br>
+
+            <label for="punti">Punti di Raccolta:</label>
+            <input type="text" id="punti" required><br><br>
+
+            <button type="submit">Aggiungi</button>
+        </form>
+
+        <h2>Ricerca Reparto</h2>
+        <input type="text" id="searchInput" placeholder="Cerca un reparto..." oninput="searchReparto()">
+
+        <!-- Tabella che mostrerà i dati -->
+        <h2>Lista Reparti</h2>
+        <table id="repartiTable">
+            <thead>
+                <tr>
+                    <th>Reparto</th>
+                    <th>Posti d'Attesa</th>
+                    <th>Punti di Raccolta</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- I dati verranno aggiunti qui dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sezione che vedranno gli utenti (solo visualizzazione dei dati) -->
+    <div id="userSection">
+        <h2>Lista Reparti</h2>
+        <table id="userTable">
+            <thead>
+                <tr>
+                    <th>Reparto</th>
+                    <th>Posti d'Attesa</th>
+                    <th>Punti di Raccolta</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <!-- I dati verranno aggiunti qui dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Array per memorizzare i reparti
+        let reparti = [];
+
+        // Funzione per aggiungere un nuovo reparto
+        document.getElementById("form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const reparto = document.getElementById("reparto").value;
+            const posti = document.getElementById("posti").value;
+            const punti = document.getElementById("punti").value;
+
+            // Aggiungi il reparto all'array
+            reparti.push({ reparto, posti, punti });
+
+            // Resetta il form
+            document.getElementById("form").reset();
+
+            // Rendi visibile la tabella con i nuovi dati
+            displayTable(reparti);
+            displayUserTable(reparti);
+        });
+
+        // Funzione per visualizzare i reparti nella tabella amministratore
+        function displayTable(data) {
+            const tableBody = document.getElementById("tableBody");
+            tableBody.innerHTML = ""; // Pulisce la tabella
+
+            data.forEach(item => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${item.reparto}</td>
+                    <td>${item.posti}</td>
+                    <td>${item.punti}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Funzione per visualizzare i reparti nella tabella utente
+        function displayUserTable(data) {
+            const userTableBody = document.getElementById("userTableBody");
+            userTableBody.innerHTML = ""; // Pulisce la tabella utente
+
+            data.forEach(item => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${item.reparto}</td>
+                    <td>${item.posti}</td>
+                    <td>${item.punti}</td>
+                `;
+                userTableBody.appendChild(row);
+            });
+        }
+
+        // Funzione per cercare un reparto (visibile solo per l'amministratore)
+        function searchReparto() {
+            const searchValue = document.getElementById("searchInput").value.toLowerCase();
+            const filteredReparti = reparti.filter(item =>
+                item.reparto.toLowerCase().includes(searchValue)
+            );
+            displayTable(filteredReparti);
+        }
+    </script>
 </body>
 </html>
